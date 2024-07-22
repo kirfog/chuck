@@ -1,0 +1,45 @@
+services:
+  django:
+    #restart: unless-stopped
+    build: ./django
+    image: django
+    env_file:
+      - ./.env
+    command: sh -cx "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./django:/usr/src/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis 
+
+  redis:
+    #restart: unless-stopped
+    image: redis:latest
+
+  celery:
+    #restart: unless-stopped
+    build: ./django
+    image: celery
+    env_file:
+      - ./.env
+    command: sh -cx "(celery -A chuck beat -l INFO &) && ( celery -A chuck flower &) && celery -A chuck worker -l INFO"
+    ports:
+      - 5555:5555
+    volumes:
+      - ./django:/usr/src/app
+    depends_on:
+      - redis
+
+  nginx:
+    #restart: unless-stopped
+    image: nginx
+    build: ./nginx
+    volumes:
+      - ./django/staticfiles:/usr/src/app/staticfiles
+      - ./django/mediafiles:/usr/src/app/mediafiles
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - django

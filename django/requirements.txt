@@ -1,0 +1,7 @@
+django
+redis
+requests
+celery
+channels[daphne]
+channels-redis
+flower
