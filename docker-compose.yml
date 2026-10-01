@@ -5,13 +5,13 @@ services:
     image: django
     env_file:
       - ./.env
-    command: sh -cx "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -cx "python manage.py migrate && daphne -b 0.0.0.0 -p 8000 chuck.asgi:application"
     volumes:
       - ./django:/usr/src/app
     ports:
       - 8000:8000
     depends_on:
-      - redis 
+      - redis
 
   redis:
     #restart: unless-stopped
